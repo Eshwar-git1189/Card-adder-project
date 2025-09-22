@@ -25,9 +25,8 @@ let selectedTextBox = null;
 
 function rgbToHex(rgb) {
   if (!rgb || !rgb.startsWith("rgb")) {
-    return rgb; // Return original value if not in rgb format
+    return rgb; 
   }
-  // Turn "rgb(r, g, b)" into [r, g, b]
   let [r, g, b] = rgb.match(/\d+/g).map(Number);
 
   const toHex = (c) => ("0" + c.toString(16)).slice(-2);
@@ -39,7 +38,6 @@ function setSelectedTextBox(textBox) {
   if (selectedTextBox && selectedTextBox !== textBox) {
     selectedTextBox.classList.remove("selected");
   }
-  document.querySelector(".resize-handle")?.remove(); // Remove any existing handle
   selectedTextBox = textBox;
   if (textBox) {
     textBox.classList.add("selected");
@@ -55,10 +53,8 @@ function setSelectedTextBox(textBox) {
     document.getElementById("font-size").value = parseInt(styles.fontSize, 10);
     document.getElementById("font-select").value = styles.fontFamily;
     document.getElementById("align-select").value = styles.textAlign;
-    makeResizable(textBox);
   } else {
     textTools.style.display = "none";
-    // Clear toggled state when nothing is selected
     boldBtn.classList.remove("toggled");
     italicBtn.classList.remove("toggled");
   }
@@ -69,9 +65,6 @@ function makeDraggable(element, container) {
   let offsetX, offsetY;
 
   const onMouseDown = (e) => {
-    // Only start dragging if the element is not being edited (i.e., does not have focus)
-    // This allows the user to click into the text box to edit it without dragging.
-    // A second click-and-hold will initiate the drag.
     isDragging = true;
     offsetX = e.offsetX;
     offsetY = e.offsetY;
@@ -81,24 +74,22 @@ function makeDraggable(element, container) {
 
   const onMouseMove = (e) => {
     if (!isDragging) return;
-    e.preventDefault(); // Prevent text selection while dragging
+    e.preventDefault();
 
     const rect = container.getBoundingClientRect();
     let x = e.clientX - rect.left - offsetX;
     let y = e.clientY - rect.top - offsetY;
 
-    // Constrain the element within the container
     x = Math.max(0, Math.min(x, rect.width - element.offsetWidth));
     y = Math.max(0, Math.min(y, rect.height - element.offsetHeight));
 
     element.style.left = `${x}px`;
     element.style.top = `${y}px`;
-    element.style.transform = "none"; // Override initial centering
+    element.style.transform = "none";
   };
 
   const onMouseUp = () => {
     isDragging = false;
-    // Clean up listeners
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
   };
@@ -106,50 +97,15 @@ function makeDraggable(element, container) {
   element.addEventListener("mousedown", onMouseDown);
 }
 
-function makeResizable(element) {
-  const handle = document.createElement("div");
-  handle.classList.add("resize-handle");
-  element.appendChild(handle);
-
-  handle.addEventListener("mousedown", (e) => {
-    e.stopPropagation(); // Prevent the drag logic from firing
-    e.preventDefault();
-
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startWidth = element.offsetWidth;
-    const startHeight = element.offsetHeight;
-
-    const onMouseMove = (moveEvent) => {
-      const newWidth = startWidth + (moveEvent.clientX - startX);
-      const newHeight = startHeight + (moveEvent.clientY - startY);
-      element.style.width = `${newWidth}px`;
-      element.style.height = `${newHeight}px`;
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      saveState();
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  });
-}
-
 function createTextBox() {
   const textBox = document.createElement("div");
   textBox.classList.add("editable-text");
   textBox.contentEditable = "true";
   textBox.textContent = "New Text";
-  // Set an initial size to make resizing more predictable
-  textBox.style.width = "150px";
-  textBox.style.height = "auto"; // Height will adjust to content initially
   return textBox;
 }
 
-// --- State Management ---
+// ---  Management of states done here ---
 
 function saveState() {
   const cardsData = [];
@@ -162,8 +118,6 @@ function saveState() {
         content: box.innerHTML,
         left: box.style.left,
         top: box.style.top,
-        width: box.style.width,
-        height: box.style.height,
         color: box.style.color,
         fontSize: box.style.fontSize,
         fontFamily: box.style.fontFamily,
@@ -189,7 +143,6 @@ function loadState() {
   const cardsData = JSON.parse(savedState);
   if (!cardsData || cardsData.length === 0) return;
 
-  // Clear default card
   cardContainer.innerHTML = "";
 
   cardsData.forEach((cardData) => {
@@ -202,7 +155,7 @@ function loadState() {
     cardData.textBoxes.forEach((boxData) => {
       const textBox = createTextBox();
       textBox.innerHTML = boxData.content;
-      Object.assign(textBox.style, boxData); // Apply all saved styles
+      Object.assign(textBox.style, boxData);
       cardContent.appendChild(textBox);
       makeDraggable(textBox, cardContent);
     });
@@ -213,7 +166,7 @@ function loadState() {
   swiper.update();
 }
 
-// --- Event Listeners ---
+// --- event listeners are added here ---
 
 addCardBtn.addEventListener("click", () => {
   const newSlide = document.createElement("div");
@@ -226,7 +179,6 @@ addCardBtn.addEventListener("click", () => {
 });
 
 deleteCardBtn.addEventListener("click", () => {
-  // Prevent deleting the last card to avoid an empty state
   if (swiper.slides.length > 1) {
     swiper.removeSlide(swiper.activeIndex);
   } else {
@@ -242,12 +194,12 @@ addTextBtn.addEventListener("click", () => {
 
   cardContent.appendChild(textBox);
   makeDraggable(textBox, cardContent);
-  setSelectedTextBox(textBox); // Select the new text box immediately
+  setSelectedTextBox(textBox); 
   saveState();
 });
 
 addImageBtn.addEventListener("click", () => {
-  imageUpload.click(); // Trigger the hidden file input
+  imageUpload.click(); 
 });
 
 imageUpload.addEventListener("change", (e) => {
@@ -262,31 +214,26 @@ imageUpload.addEventListener("change", (e) => {
     saveState();
   };
   reader.readAsDataURL(file);
-  e.target.value = ""; // Reset file input
+  e.target.value = ""; 
 });
 
-// Save state on drag end and text input
 document.addEventListener("mouseup", () => setTimeout(saveState, 0));
 document.addEventListener("keyup", () => setTimeout(saveState, 0));
 
-// Handle text box selection and deselection
 document.addEventListener("click", (e) => {
   const clickedTextBox = e.target.closest(".editable-text");
   const isToolsPanel = e.target.closest("#text-tools");
 
-  // If the click is on a text box, select it.
   if (clickedTextBox) {
     setSelectedTextBox(clickedTextBox);
     return;
   }
 
-  // If the click is outside the text box and the tools panel, deselect.
   if (!isToolsPanel) {
     setSelectedTextBox(null);
   }
 });
 
-// Bold and Italic button listeners
 boldBtn.addEventListener("click", () => {
   if (!selectedTextBox) return;
   const isBold = selectedTextBox.style.fontWeight === "bold";
@@ -304,12 +251,11 @@ italicBtn.addEventListener("click", () => {
 deleteTextBtn.addEventListener("click", () => {
   if (selectedTextBox) {
     selectedTextBox.remove();
-    setSelectedTextBox(null); // Deselect and hide tools
+    setSelectedTextBox(null); 
     saveState();
   }
 });
 
-// Text Editing Tool Listeners
 textTools.addEventListener("input", (e) => {
   if (!selectedTextBox) return;
   const { id, value } = e.target;
@@ -330,16 +276,14 @@ textTools.addEventListener("input", (e) => {
   saveState();
 });
 
-// --- Initialization ---
+// --- initilization process ---
 
 function initialize() {
   loadState();
-  // Make any pre-existing text boxes (from initial HTML or loaded state) draggable
   document.querySelectorAll(".editable-text").forEach((box) => {
     const cardContent = box.closest(".card-content");
     if (cardContent) makeDraggable(box, cardContent);
   });
 }
-
 
 initialize();

@@ -25,7 +25,7 @@ body {
   position: relative;
   border: 2px solid #333;
   border-radius: 8px;
-  overflow: hidden; /* keep text inside */
+  overflow: hidden;
 }
 
 .editable-text {
@@ -39,8 +39,8 @@ body {
   cursor: move;
   padding: 4px 8px;
   border: 1px dashed transparent;
-  user-select: none; /* Prevent text selection when not editing */
-  min-width: 50px; /* Prevent resizing to be too small */
+  user-select: none;
+  min-width: 50px; 
 }
 
 .editable-text:focus {
@@ -49,7 +49,7 @@ body {
 }
 
 .editable-text.selected {
-  border: 2px solid #3b82f6; /* A nice blue to indicate selection */
+  border: 2px solid #3b82f6; 
   outline: none;
 }
 
@@ -67,7 +67,7 @@ body {
   position: relative;
   background-size: cover;
   background-position: center;
-  overflow: hidden; /* keeps text inside */
+  overflow: hidden;
 }
 
 .container2 {
@@ -79,8 +79,8 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Standardize gap */
-  overflow-y: auto; /* Allow vertical scrolling if content overflows */
+  gap: 12px; 
+  overflow-y: auto; 
 }
 
 button {
@@ -107,7 +107,7 @@ button:hover {
 }
 
 .style-buttons button.toggled {
-  background-color: #a5b4fc; /* A nice indigo to show it's active */
+  background-color: #a5b4fc;
   border-color: #6366f1;
 }
 
@@ -127,10 +127,9 @@ button:hover {
   font-weight: 600;
   font-size: 14px;
   color: #374151;
-  margin-bottom: -5px; /* Pulls the input closer to its label */
+  margin-bottom: -5px;
 }
 
-/* Common styles for inputs and selects */
 #text-tools select,
 #text-tools input[type="number"] {
   width: 100%;
@@ -148,7 +147,6 @@ button:hover {
   padding: 4px;
 }
 
-/* Style for the delete button */
 #delete-text-btn {
   background-color: #fee2e2;
   color: #b91c1c;
@@ -156,7 +154,6 @@ button:hover {
   font-weight: bold;
 }
 
-/* --- Resize Handle --- */
 .resize-handle {
   position: absolute;
   right: -5px;
