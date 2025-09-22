@@ -12,9 +12,28 @@ const swiper = new Swiper(".mySwiper", {
 const addCardBtn = document.getElementById("add-card");
 const addTextBtn = document.getElementById("add-text");
 const textTools = document.getElementById("text-tools");
+const addImageBtn = document.getElementById("add-image");
+const imageUpload = document.getElementById("image-upload");
+const boldBtn = document.getElementById("bold-btn");
+const italicBtn = document.getElementById("italic-btn");
+const deleteCardBtn = document.getElementById("delete-card");
+const deleteTextBtn = document.getElementById("delete-text-btn");
 const cardContainer = document.getElementById("card-container");
+const deleteImageBtn = document.getElementById("delete-image-btn");
 
 let selectedTextBox = null;
+
+function rgbToHex(rgb) {
+  if (!rgb || !rgb.startsWith("rgb")) {
+    return rgb; // Return original value if not in rgb format
+  }
+  // Turn "rgb(r, g, b)" into [r, g, b]
+  let [r, g, b] = rgb.match(/\d+/g).map(Number);
+
+  const toHex = (c) => ("0" + c.toString(16)).slice(-2);
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
 
 function setSelectedTextBox(textBox) {
   if (selectedTextBox && selectedTextBox !== textBox) {
@@ -24,8 +43,22 @@ function setSelectedTextBox(textBox) {
   if (textBox) {
     textBox.classList.add("selected");
     textTools.style.display = "block";
+    // Update tools to reflect the selected text box's style
+    const styles = window.getComputedStyle(textBox);
+    boldBtn.classList.toggle(
+      "toggled",
+      styles.fontWeight === "700" || styles.fontWeight === "bold"
+    );
+    italicBtn.classList.toggle("toggled", styles.fontStyle === "italic");
+    document.getElementById("color-picker").value = rgbToHex(styles.color);
+    document.getElementById("font-size").value = parseInt(styles.fontSize, 10);
+    document.getElementById("font-select").value = styles.fontFamily;
+    document.getElementById("align-select").value = styles.textAlign;
   } else {
     textTools.style.display = "none";
+    // Clear toggled state when nothing is selected
+    boldBtn.classList.remove("toggled");
+    italicBtn.classList.remove("toggled");
   }
 }
 
@@ -34,15 +67,14 @@ function makeDraggable(element, container) {
   let offsetX, offsetY;
 
   const onMouseDown = (e) => {
-    // Prevent dragging when editing text
-    if (e.target.isContentEditable) {
-      isDragging = true;
-      offsetX = e.offsetX;
-      offsetY = e.offsetY;
-      // Add listeners for move and up events
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-    }
+    // Only start dragging if the element is not being edited (i.e., does not have focus)
+    // This allows the user to click into the text box to edit it without dragging.
+    // A second click-and-hold will initiate the drag.
+    isDragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
   };
 
   const onMouseMove = (e) => {
@@ -91,6 +123,15 @@ addCardBtn.addEventListener("click", () => {
   swiper.slideTo(swiper.slides.length - 1);
 });
 
+deleteCardBtn.addEventListener("click", () => {
+  // Prevent deleting the last card to avoid an empty state
+  if (swiper.slides.length > 1) {
+    swiper.removeSlide(swiper.activeIndex);
+  } else {
+    alert("You cannot delete the last card.");
+  }
+});
+
 addTextBtn.addEventListener("click", () => {
   const activeSlide = swiper.slides[swiper.activeIndex];
   const cardContent = activeSlide.querySelector(".card-content");
@@ -101,14 +142,60 @@ addTextBtn.addEventListener("click", () => {
   setSelectedTextBox(textBox); // Select the new text box immediately
 });
 
+addImageBtn.addEventListener("click", () => {
+  imageUpload.click(); // Trigger the hidden file input
+});
+
+imageUpload.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const activeSlide = swiper.slides[swiper.activeIndex];
+    const cardContent = activeSlide.querySelector(".card-content");
+    cardContent.style.backgroundImage = `url(${event.target.result})`;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = ""; // Reset file input
+});
+
 // Handle text box selection and deselection
 document.addEventListener("click", (e) => {
   const clickedTextBox = e.target.closest(".editable-text");
   const isToolsPanel = e.target.closest("#text-tools");
-  setSelectedTextBox(clickedTextBox);
-  // If click is outside a textbox and not on the tools panel, hide tools
-  if (!clickedTextBox && !isToolsPanel) {
+
+  // If the click is on a text box, select it.
+  if (clickedTextBox) {
+    setSelectedTextBox(clickedTextBox);
+    return;
+  }
+
+  // If the click is outside the text box and the tools panel, deselect.
+  if (!isToolsPanel) {
     setSelectedTextBox(null);
+  }
+});
+
+// Bold and Italic button listeners
+boldBtn.addEventListener("click", () => {
+  if (!selectedTextBox) return;
+  const isBold = selectedTextBox.style.fontWeight === "bold";
+  selectedTextBox.style.fontWeight = isBold ? "normal" : "bold";
+  boldBtn.classList.toggle("toggled", !isBold);
+});
+
+italicBtn.addEventListener("click", () => {
+  if (!selectedTextBox) return;
+  const isItalic = selectedTextBox.style.fontStyle === "italic";
+  selectedTextBox.style.fontStyle = isItalic ? "normal" : "italic";
+  italicBtn.classList.toggle("toggled", !isItalic);
+});
+
+deleteTextBtn.addEventListener("click", () => {
+  if (selectedTextBox) {
+    selectedTextBox.remove();
+    setSelectedTextBox(null); // Deselect and hide tools
   }
 });
 
@@ -123,13 +210,6 @@ textTools.addEventListener("input", (e) => {
     case "font-size":
       selectedTextBox.style.fontSize = `${value}px`;
       break;
-  }
-});
-
-textTools.addEventListener("change", (e) => {
-  if (!selectedTextBox) return;
-  const { id, value } = e.target;
-  switch (id) {
     case "font-select":
       selectedTextBox.style.fontFamily = value;
       break;

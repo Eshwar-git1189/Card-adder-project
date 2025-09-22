@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Cinzel&family=Lora&family=Pacifico&family=Petit+Formal+Script&display=swap"
       rel="stylesheet"
     />
-    <!-- Swiper CSS -->
+    <!-- this is swiper css lib -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
@@ -22,7 +22,7 @@
   </head>
   <body>
     <div class="main">
-      <!-- Carousel -->
+      <!-- tis is carosel -->
       <div class="swiper mySwiper container1">
         <div class="swiper-wrapper" id="card-container">
           <!-- Default Card -->
@@ -32,19 +32,27 @@
             </div>
           </div>
         </div>
-        <!-- Navigation -->
+        <!-- this to navigation -->
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
         <div class="swiper-pagination"></div>
       </div>
 
-      <!-- Options Panel -->
+      <!--tis is options panel -->
       <div class="container2">
         <h3>Edit Options</h3>
         <button id="add-card">➕ Add Card</button>
         <button id="add-text">➕ Add Text Box</button>
+        <button id="delete-card">🗑️ Delete Card</button>
+        <button id="add-image">🖼️ Add Image</button>
+        <input
+          type="file"
+          id="image-upload"
+          accept="image/*"
+          style="display: none"
+        />
 
-        <!-- Editing Tools (hidden until a text box is selected) -->
+        <!-- editing Tools  -->
         <div id="text-tools" style="display: none; margin-top: 15px">
           <label>Font</label>
           <select id="font-select">
@@ -56,6 +64,11 @@
             <option value="'Lora', serif">Lora</option>
             <option value="'Cinzel', serif">Cinzel</option>
           </select>
+
+          <div class="style-buttons">
+            <button id="bold-btn"><b>B</b></button>
+            <button id="italic-btn"><i>I</i></button>
+          </div>
 
           <label>Color</label>
           <input type="color" id="color-picker" value="#222222" />
@@ -70,6 +83,10 @@
             <option value="right">Right</option>
             <option value="justify">Justify</option>
           </select>
+
+          <button id="delete-text-btn" style="margin-top: 10px">
+            🗑️ Delete Text
+          </button>
         </div>
       </div>
     </div>
