@@ -112,6 +112,68 @@ function createTextBox() {
   return textBox;
 }
 
+// --- State Management ---
+
+function saveState() {
+  const cardsData = [];
+  document.querySelectorAll(".swiper-slide").forEach((slide) => {
+    const cardContent = slide.querySelector(".card-content");
+    const textBoxesData = [];
+
+    cardContent.querySelectorAll(".editable-text").forEach((box) => {
+      textBoxesData.push({
+        content: box.innerHTML,
+        left: box.style.left,
+        top: box.style.top,
+        color: box.style.color,
+        fontSize: box.style.fontSize,
+        fontFamily: box.style.fontFamily,
+        fontWeight: box.style.fontWeight,
+        fontStyle: box.style.fontStyle,
+        textAlign: box.style.textAlign,
+      });
+    });
+
+    cardsData.push({
+      backgroundImage: cardContent.style.backgroundImage,
+      textBoxes: textBoxesData,
+    });
+  });
+
+  localStorage.setItem("cardCreatorState", JSON.stringify(cardsData));
+}
+
+function loadState() {
+  const savedState = localStorage.getItem("cardCreatorState");
+  if (!savedState) return;
+
+  const cardsData = JSON.parse(savedState);
+  if (!cardsData || cardsData.length === 0) return;
+
+  // Clear default card
+  cardContainer.innerHTML = "";
+
+  cardsData.forEach((cardData) => {
+    const newSlide = document.createElement("div");
+    newSlide.classList.add("swiper-slide", "card");
+    newSlide.innerHTML = `<div class="card-content"></div>`;
+    const cardContent = newSlide.querySelector(".card-content");
+    cardContent.style.backgroundImage = cardData.backgroundImage;
+
+    cardData.textBoxes.forEach((boxData) => {
+      const textBox = createTextBox();
+      textBox.innerHTML = boxData.content;
+      Object.assign(textBox.style, boxData); // Apply all saved styles
+      cardContent.appendChild(textBox);
+      makeDraggable(textBox, cardContent);
+    });
+
+    cardContainer.appendChild(newSlide);
+  });
+
+  swiper.update();
+}
+
 // --- Event Listeners ---
 
 addCardBtn.addEventListener("click", () => {
@@ -121,6 +183,7 @@ addCardBtn.addEventListener("click", () => {
   cardContainer.appendChild(newSlide);
   swiper.update();
   swiper.slideTo(swiper.slides.length - 1);
+  saveState();
 });
 
 deleteCardBtn.addEventListener("click", () => {
@@ -130,6 +193,7 @@ deleteCardBtn.addEventListener("click", () => {
   } else {
     alert("You cannot delete the last card.");
   }
+  saveState();
 });
 
 addTextBtn.addEventListener("click", () => {
@@ -140,6 +204,7 @@ addTextBtn.addEventListener("click", () => {
   cardContent.appendChild(textBox);
   makeDraggable(textBox, cardContent);
   setSelectedTextBox(textBox); // Select the new text box immediately
+  saveState();
 });
 
 addImageBtn.addEventListener("click", () => {
@@ -155,10 +220,15 @@ imageUpload.addEventListener("change", (e) => {
     const activeSlide = swiper.slides[swiper.activeIndex];
     const cardContent = activeSlide.querySelector(".card-content");
     cardContent.style.backgroundImage = `url(${event.target.result})`;
+    saveState();
   };
   reader.readAsDataURL(file);
   e.target.value = ""; // Reset file input
 });
+
+// Save state on drag end and text input
+document.addEventListener("mouseup", () => setTimeout(saveState, 0));
+document.addEventListener("keyup", () => setTimeout(saveState, 0));
 
 // Handle text box selection and deselection
 document.addEventListener("click", (e) => {
@@ -196,6 +266,7 @@ deleteTextBtn.addEventListener("click", () => {
   if (selectedTextBox) {
     selectedTextBox.remove();
     setSelectedTextBox(null); // Deselect and hide tools
+    saveState();
   }
 });
 
@@ -217,12 +288,18 @@ textTools.addEventListener("input", (e) => {
       selectedTextBox.style.textAlign = value;
       break;
   }
+  saveState();
 });
 
-// Initialize first text box
-document.querySelectorAll(".editable-text").forEach((box) => {
-  const cardContent = box.closest(".card-content");
-  if (cardContent) {
-    makeDraggable(box, cardContent);
-  }
-});
+// --- Initialization ---
+
+function initialize() {
+  loadState();
+  // Make any pre-existing text boxes (from initial HTML or loaded state) draggable
+  document.querySelectorAll(".editable-text").forEach((box) => {
+    const cardContent = box.closest(".card-content");
+    if (cardContent) makeDraggable(box, cardContent);
+  });
+}
+
+initialize();
