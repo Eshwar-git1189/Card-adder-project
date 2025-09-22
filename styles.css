@@ -40,6 +40,7 @@ body {
   padding: 4px 8px;
   border: 1px dashed transparent;
   user-select: none; /* Prevent text selection when not editing */
+  min-width: 50px; /* Prevent resizing to be too small */
 }
 
 .editable-text:focus {
@@ -153,4 +154,17 @@ button:hover {
   color: #b91c1c;
   border-color: #fecaca;
   font-weight: bold;
+}
+
+/* --- Resize Handle --- */
+.resize-handle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 14px;
+  height: 14px;
+  background-color: #3b82f6;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: nwse-resize;
 }

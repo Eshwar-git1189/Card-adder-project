@@ -39,6 +39,7 @@ function setSelectedTextBox(textBox) {
   if (selectedTextBox && selectedTextBox !== textBox) {
     selectedTextBox.classList.remove("selected");
   }
+  document.querySelector(".resize-handle")?.remove(); // Remove any existing handle
   selectedTextBox = textBox;
   if (textBox) {
     textBox.classList.add("selected");
@@ -54,6 +55,7 @@ function setSelectedTextBox(textBox) {
     document.getElementById("font-size").value = parseInt(styles.fontSize, 10);
     document.getElementById("font-select").value = styles.fontFamily;
     document.getElementById("align-select").value = styles.textAlign;
+    makeResizable(textBox);
   } else {
     textTools.style.display = "none";
     // Clear toggled state when nothing is selected
@@ -104,11 +106,46 @@ function makeDraggable(element, container) {
   element.addEventListener("mousedown", onMouseDown);
 }
 
+function makeResizable(element) {
+  const handle = document.createElement("div");
+  handle.classList.add("resize-handle");
+  element.appendChild(handle);
+
+  handle.addEventListener("mousedown", (e) => {
+    e.stopPropagation(); // Prevent the drag logic from firing
+    e.preventDefault();
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = element.offsetWidth;
+    const startHeight = element.offsetHeight;
+
+    const onMouseMove = (moveEvent) => {
+      const newWidth = startWidth + (moveEvent.clientX - startX);
+      const newHeight = startHeight + (moveEvent.clientY - startY);
+      element.style.width = `${newWidth}px`;
+      element.style.height = `${newHeight}px`;
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      saveState();
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  });
+}
+
 function createTextBox() {
   const textBox = document.createElement("div");
   textBox.classList.add("editable-text");
   textBox.contentEditable = "true";
   textBox.textContent = "New Text";
+  // Set an initial size to make resizing more predictable
+  textBox.style.width = "150px";
+  textBox.style.height = "auto"; // Height will adjust to content initially
   return textBox;
 }
 
@@ -125,6 +162,8 @@ function saveState() {
         content: box.innerHTML,
         left: box.style.left,
         top: box.style.top,
+        width: box.style.width,
+        height: box.style.height,
         color: box.style.color,
         fontSize: box.style.fontSize,
         fontFamily: box.style.fontFamily,
@@ -301,5 +340,6 @@ function initialize() {
     if (cardContent) makeDraggable(box, cardContent);
   });
 }
+
 
 initialize();
